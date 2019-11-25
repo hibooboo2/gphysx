@@ -14,11 +14,10 @@ func main() {
 	log.SetOutput(f)
 	log.SetFlags(log.Lshortfile)
 	pts := []*vector.Particle{}
-	for x := float64(-5); x < 5; x++ {
-		for y := float64(-5); y < 5; y++ {
-			pts = append(pts, &vector.Particle{P: vector.Vector{X: x, Y: y}, Mass: 1})
-		}
-	}
+	pts = append(pts, &vector.Particle{P: vector.Vector{X: -5, Y: -5}, Mass: 1})
+	pts = append(pts, &vector.Particle{P: vector.Vector{X: 5, Y: -5}, Mass: 1})
+	pts = append(pts, &vector.Particle{P: vector.Vector{X: 5, Y: 5}, Mass: 1})
+	pts = append(pts, &vector.Particle{P: vector.Vector{X: -5, Y: 5}, Mass: 1})
 
 	s, err := tcell.NewTerminfoScreen()
 	if err != nil {
@@ -31,16 +30,16 @@ func main() {
 	defer s.Fini()
 	origin := &vector.Vector{20, 10, 0}
 	player := &vector.Particle{Mass: 1, Name: "player"}
-	player.AirDragCoeffecient.Y = -0.1605
-	player.V.X = 1
-	gravity := vector.Vector{Y: -1}
-	done := monitorKeys(s, []*vector.Vector{&player.A})
+	player.AirDragCoeffecient.Y = -0.000605
+	// player.V.X = 1
+	gravity := vector.Vector{Y: 1}
+	done := monitorKeys(s, []*vector.Vector{&player.P})
 	last := time.Now()
 	timeMoved := 0
 	for {
 
 		timeMoved++
-		time.Sleep(time.Millisecond * 1000 / 60)
+		time.Sleep(time.Millisecond * 1000 / 10)
 		s.Clear()
 		select {
 		case <-done:
@@ -56,8 +55,9 @@ func main() {
 			s.SetContent(3, 3, '💚', nil, tcell.StyleDefault)
 		}
 
-		now := time.Since(last) * 5
+		now := time.Since(last)
 		last = time.Now()
+		// now = time.Millisecond
 
 		OX, OY, _ := origin.AsIntPos()
 		for _, pt := range pts {
@@ -65,7 +65,7 @@ func main() {
 			x, y, _ := pt.P.AsIntPos()
 			s.SetContent(x+OX, y+OY, '*', nil, tcell.StyleDefault)
 		}
-		player.Next(now, gravity, vector.Vector{-10, -10, -10}, vector.Vector{10, 10, 10})
+		player.Next(now, gravity, vector.Vector{-10, -10, -5}, vector.Vector{10, 10, 5})
 		PX, PY, _ := player.P.AsIntPos()
 		s.SetContent(OX+PX, OY+PY, '😃', nil, tcell.StyleDefault)
 		s.SetContent(40, 5, '0'+rune(int(player.A.X)%10), nil, tcell.StyleDefault)
@@ -81,17 +81,18 @@ func monitorKeys(s tcell.Screen, vectors []*vector.Vector) chan struct{} {
 		for {
 			evt := s.PollEvent()
 			force := vector.Vector{}
+			forceMod := 200.00
 			switch e := evt.(type) {
 			case *tcell.EventKey:
 				switch e.Key() {
 				case tcell.KeyUp:
-					force.Y += 200
+					force.Y += forceMod
 				case tcell.KeyDown:
-					force.Y -= 200
+					force.Y -= forceMod
 				case tcell.KeyLeft:
-					force.X -= 200
+					force.X -= forceMod
 				case tcell.KeyRight:
-					force.X += 200
+					force.X += forceMod
 				case tcell.KeyEsc:
 					done <- struct{}{}
 				}

@@ -35,23 +35,23 @@ func (v Vector) Transform(vec Vector, t func(val float64, val2 float64) float64)
 
 func (v *Vector) Edge(origin Vector, end Vector) {
 	if v.X >= end.X {
-		v.X = origin.X
-	}
-	if v.X < origin.X {
 		v.X = end.X
 	}
+	if v.X < origin.X {
+		v.X = origin.X
+	}
 	if v.Y >= end.Y {
-		v.Y = origin.Y
+		v.Y = end.Y
 	}
 	if v.Y < origin.Y {
-		v.Y = end.Y
+		v.Y = origin.Y
 	}
 
 	if v.Z >= end.Z {
-		v.Z = origin.Z
+		v.Z = end.Z
 	}
 	if v.Z < origin.Z {
-		v.Z = end.Z
+		v.Z = origin.Z
 	}
 }
 
@@ -66,11 +66,15 @@ type Particle struct {
 
 func (p *Particle) Next(t time.Duration, f Vector, origin Vector, end Vector) Vector {
 	//Detect Coll
-	f.Y = 9.8 / p.Mass
 
 	if strings.TrimSpace(p.Name) != "" {
 		log.Println("Force ORIG:", f)
 	}
+
+	f = f.Transform(f, func(val, val2 float64) float64 {
+		return 9.8 * val2 / p.Mass
+	})
+
 	f = f.Add(p.AirDragCoeffecient.Transform(p.V, func(val float64, val2 float64) float64 {
 		return val * (val2 * val2)
 	}))
@@ -95,7 +99,7 @@ func (p *Particle) Next(t time.Duration, f Vector, origin Vector, end Vector) Ve
 	p.V.Z += zAvgAccel * timeStep
 	if strings.TrimSpace(p.Name) != "" {
 		x, y, z := p.P.AsIntPos()
-		log.Println(p.Name, p.AirDragCoeffecient, p.A, p.V, x, y, z)
+		log.Printf("Name: %s Drag: %v A: %v V: %v X: %v Y: %v Z: %v", p.Name, p.AirDragCoeffecient, p.A, p.V, x, y, z)
 	}
 	p.P.Edge(origin, end)
 	return p.P
