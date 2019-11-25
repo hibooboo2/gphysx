@@ -32,14 +32,14 @@ func main() {
 	player := &vector.Particle{Mass: 1, Name: "player"}
 	player.AirDragCoeffecient.Y = -0.000605
 	// player.V.X = 1
-	gravity := vector.Vector{Y: 1}
+	gravity := vector.Vector{Y: .1}
 	done := monitorKeys(s, []*vector.Vector{&player.P})
 	last := time.Now()
 	timeMoved := 0
 	for {
 
 		timeMoved++
-		time.Sleep(time.Millisecond * 1000 / 10)
+		time.Sleep(time.Millisecond * 1000 / 60)
 		s.Clear()
 		select {
 		case <-done:
@@ -48,7 +48,7 @@ func main() {
 		default:
 		}
 
-		frames := 45
+		frames := 20
 		if timeMoved%frames > frames/2 {
 			s.SetContent(3, 3, '🔴', nil, tcell.StyleDefault)
 		} else {
@@ -65,7 +65,8 @@ func main() {
 			x, y, _ := pt.P.AsIntPos()
 			s.SetContent(x+OX, y+OY, '*', nil, tcell.StyleDefault)
 		}
-		player.Next(now, gravity, vector.Vector{-10, -10, -5}, vector.Vector{10, 10, 5})
+
+		player.Next(now, gravity, vector.Vector{-20, -20, -5}, vector.Vector{20, 20, 5})
 		PX, PY, _ := player.P.AsIntPos()
 		s.SetContent(OX+PX, OY+PY, '😃', nil, tcell.StyleDefault)
 		s.SetContent(40, 5, '0'+rune(int(player.A.X)%10), nil, tcell.StyleDefault)

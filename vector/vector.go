@@ -64,6 +64,16 @@ type Particle struct {
 	Mass               float64
 }
 
+type Object struct {
+}
+
+func (o Object) InBounds(o Object) bool {
+	for {
+
+	}
+	return false
+}
+
 func (p *Particle) Next(t time.Duration, f Vector, origin Vector, end Vector) Vector {
 	//Detect Coll
 
